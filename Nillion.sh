@@ -13,15 +13,12 @@ fi
 function main_menu() {
     while true; do
         clear
-        echo "脚本由推特 @ferdie_jhovie 提供，免费开源，请勿相信收费"
+        echo "脚本由推特 @ferdie_jhovie 提供，chanway客制化修改"
         echo "================================================================"
-        echo "节点社区 Telegram 群组: https://t.me/niuwuriji"
-        echo "节点社区 Telegram 频道: https://t.me/niuwuriji"
-        echo "节点社区 Discord 社群: https://discord.gg/GbMV5EcNWF"
         echo "退出脚本，请按键盘 ctrl+c 退出"
         echo "请选择要执行的操作:"
         echo "1) 安装节点"
-        echo "2) 查询日志（需要先使用docker ps来查看id）"
+        echo "2) 查询日志"
         echo "3) 删除节点"
         echo "4) 更换 RPC 并重启节点"
         echo "5) 查看 public_key 和 account_id"
@@ -138,7 +135,7 @@ function install_node() {
     if [ "$sync_status" = "yes" ]; then
         # 运行节点
         echo "正在运行节点..."
-        docker run -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "https://nillion-testnet-rpc.polkachu.com"
+        docker run -d --name nillion_verifier -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "https://nillion-testnet-rpc.polkachu.com"
         echo "节点正在运行。"
     else
         echo "节点未同步。脚本将退出。"
@@ -151,18 +148,8 @@ function install_node() {
 
 # 查询日志函数
 function query_logs() {
-    # 提示用户输入容器 ID
-    read -p "请输入要查询日志的容器 ID: " container_id
-
-    # 查看 Docker 容器日志
-    echo "正在查询容器 $container_id 的日志..."
-
     # 检查容器是否存在
-    if [ "$(docker ps -q -f id=$container_id)" ]; then
-        docker logs -f $container_id --tail 100
-    else
-        echo "没有运行的容器 $container_id。"
-    fi
+	docker logs -f nillion_verifier --tail 100
 
     # 等待用户按任意键以返回主菜单
     read -p "按任意键返回主菜单..."
@@ -213,10 +200,14 @@ function change_rpc() {
     docker rm nillion_verifier
 
     echo "正在运行新的 Docker 容器..."
-    docker run -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "$new_rpc_url"
+    docker run -d --name nillion_verifier -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "$new_rpc_url"
 
     echo "节点已更新到新的 RPC：$new_rpc_url"
+   
     
+    echo "检查RPC同步情况：$new_rpc_url"
+    curl -s $new_rpc_url/status |jq .result.sync_info
+
     # 等待用户按任意键返回主菜单
     read -p "按任意键继续返回主菜单..."
 }
