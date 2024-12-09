@@ -135,7 +135,7 @@ function install_node() {
     if [ "$sync_status" = "yes" ]; then
         # 运行节点
         echo "正在运行节点..."
-        docker run -d --name nillion_verifier -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "https://nillion-testnet-rpc.polkachu.com"
+        docker run -d --name nillion_verifier --restart=always -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "https://nillion-testnet-rpc.polkachu.com"
         echo "节点正在运行。"
     else
         echo "节点未同步。脚本将退出。"
