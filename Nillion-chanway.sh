@@ -200,7 +200,7 @@ function change_rpc() {
     docker rm nillion_verifier
 
     echo "正在运行新的 Docker 容器..."
-    docker run -d --name nillion_verifier -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "$new_rpc_url"
+    docker run -d --name nillion_verifier --restart=always -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "$new_rpc_url"
 
     echo "节点已更新到新的 RPC：$new_rpc_url"
    
